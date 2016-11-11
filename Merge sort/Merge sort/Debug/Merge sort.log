@@ -1,0 +1,7 @@
+﻿  Merge Sort.cpp
+  merge_sort.cpp
+  Создание кода...
+Merge Sort.obj : error LNK2005: "void __cdecl divide_and_merge(int *,int,int)" (?divide_and_merge@@YAXPAHHH@Z) єцх юяЁхфхыхэ т merge_sort.obj
+Merge Sort.obj : error LNK2005: "void __cdecl merge(int *,int,int,int)" (?merge@@YAXPAHHHH@Z) єцх юяЁхфхыхэ т merge_sort.obj
+Merge Sort.obj : error LNK2005: "void __cdecl merge_sort(int *,int)" (?merge_sort@@YAXPAHH@Z) єцх юяЁхфхыхэ т merge_sort.obj
+D:\HSE\Algo\Merge sort\Debug\Merge sort.exe : fatal error LNK1169: юсэрЁєцхэ ьэюуюъЁрЄэю юяЁхфхыхээ√щ ёшьтюы - юфшэ шыш сюыхх
