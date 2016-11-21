@@ -1,6 +1,6 @@
 #include <iostream>
 #include "HuffmanCode.h"
-#include <string>
+#include "ShannonFanoCode.h"
 
 using std::cin;
 using std::cout;
@@ -25,6 +25,7 @@ int main()
     }
 
     HuffmanCode *hc = nullptr;
+    ShannonFanoCode *sf = nullptr;
     if (x == '0')
     {
         hc = new HuffmanCode();
@@ -32,9 +33,11 @@ int main()
         hc->decode("output.bin", "decoded.txt");
     } else
     {
-        cout << "not yet";
+        sf = new ShannonFanoCode();
+        sf->proceed();
     }
 
     delete hc;
+//    delete sf;
     return 0;
 }

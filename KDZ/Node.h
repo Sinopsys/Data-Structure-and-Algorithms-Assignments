@@ -8,9 +8,19 @@
 
 class Node
 {
+private:
+    int _n;
+
+    char _c;
 public:
-    int n;
-    char c;
+    int get_n();
+
+    char get_c();
+
+    void set_c(char c);
+
+    void set_n(int n);
+
     Node *left, *right;
 
     Node(Node *l, Node *r);

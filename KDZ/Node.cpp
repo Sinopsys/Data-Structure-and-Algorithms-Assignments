@@ -8,7 +8,7 @@ Node::Node(Node *l, Node *r)
 {
     this->left = l;
     this->right = r;
-    n = l->n + r->n;
+    _n = l->_n + r->_n;
 }
 
 Node::Node()
@@ -20,4 +20,24 @@ Node::~Node()
 {
     delete this->right;
     delete this->left;
+}
+
+int Node::get_n()
+{
+    return this->_n;
+}
+
+char Node::get_c()
+{
+    return this->_c;
+}
+
+void Node::set_n(int n)
+{
+    this->_n = n;
+}
+
+void Node::set_c(char c)
+{
+    this->_c = c;
 }

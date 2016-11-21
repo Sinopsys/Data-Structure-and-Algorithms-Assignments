@@ -8,24 +8,27 @@
 #include <vector>
 #include "Node.h"
 #include <map>
+#include <vector>
 
 using std::vector;
 using std::map;
+using std::vector;
 
 class Table
 {
 private:
-    vector<bool> code;
+    vector<bool> _code;
 
     void buildTable(Node *root);
 
+    map<char, vector<bool >> _table;
 public:
     Table()
     {};
 
     Table(Node *root);
 
-    map<char, vector<bool >> table;
+    map<char, vector<bool >> get_table();
 };
 
 

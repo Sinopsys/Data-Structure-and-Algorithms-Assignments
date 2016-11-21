@@ -3,9 +3,8 @@
 //
 
 #include "HuffmanCode.h"
-
-#include "HuffmanCode.h"
 #include <map>
+#include <iostream>
 #include <vector>
 #include <list>
 #include <fstream>
@@ -21,18 +20,24 @@ void HuffmanCode::encode(string in, string out)
 {
     map<char, int> m;
     ifstream myfile(in);
+    char c;
     while (!myfile.eof())
     {
-        char c = (char) myfile.get();
+        char tmp = (char) myfile.get();
+        if (tmp != EOF)
+            c = tmp;
+        else
+            break;
         ++m[c];
     }
+
 
     list<Node *> lst;
     for (auto itr = m.begin(); itr != m.end(); ++itr)
     {
         Node *tmp = new Node();
-        tmp->c = itr->first;
-        tmp->n = itr->second;
+        tmp->set_c(itr->first);
+        tmp->set_n(itr->second);
         lst.push_back(tmp);
     }
 
@@ -46,15 +51,11 @@ void HuffmanCode::encode(string in, string out)
         lst.push_front(new Node(tmp_left, tmp_right));
     }
 
-    root = lst.front();
-    Table table(root);
-    myfile.clear();
-    myfile.seekg(0);
-
+    _root = lst.front();
+    Table *table = new Table(_root);
 
     myfile.clear();
     myfile.seekg(0);
-
 
     ofstream output(out);
 
@@ -63,7 +64,7 @@ void HuffmanCode::encode(string in, string out)
     while (!myfile.eof())
     {
         char c = (char) myfile.get();
-        vector<bool> x = table.table[c];
+        vector<bool> x = table->get_table()[c];
         for (int n = 0; n < x.size(); ++n)
         {
             buf = buf | x[n] << (7 - count);
@@ -89,7 +90,7 @@ void HuffmanCode::decode(string src, string dest)
     ifstream from(src);
     ofstream de(dest);
 
-    Node *p = root;
+    Node *p = _root;
     int count = 0;
     char byte;
     byte = (char) from.get();
@@ -102,8 +103,8 @@ void HuffmanCode::decode(string src, string dest)
             p = p->left;
         if (p->left == nullptr && p->right == nullptr)
         {
-            de << p->c;
-            p = root;
+            de << p->get_c();
+            p = _root;
         }
         count++;
         if (count == 8)
@@ -112,17 +113,16 @@ void HuffmanCode::decode(string src, string dest)
             byte = (char) from.get();
         }
     }
-
     from.close();
 }
 
 HuffmanCode::~HuffmanCode()
 {
-    Node *tmp = root;
+    Node *tmp = _root;
     if (tmp->left != nullptr)
         delete tmp->left;
     if (tmp->right != nullptr)
         delete tmp->right;
     delete tmp;
-    delete root;
+    delete _root;
 }

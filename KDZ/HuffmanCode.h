@@ -19,12 +19,13 @@ private:
     {
         bool operator()(Node *l, Node *r) const
         {
-            return l->n < r->n;
+            return l->get_n() < r->get_n();
         }
     };
 
+    Node *_root;
+
 public:
-    Node *root;
 
     void encode(string in, string out);
 
