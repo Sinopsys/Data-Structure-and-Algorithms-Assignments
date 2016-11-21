@@ -1,38 +1,40 @@
 #include <iostream>
-#include <vector>
-#include <list>
-#include <map>
+#include "HuffmanCode.h"
+#include <string>
 
-using std::string;
-using std::vector;
-using std::list;
-using std::map;
-using std::cout;
 using std::cin;
-using std::endl;
-
-class Node
-{
-public:
-    int a;
-    char c;
-    Node *left, *right;
-};
+using std::cout;
+using std::string;
 
 int main()
 {
-    string s = "asdaaaaadds";
-    map<char, int> m;
-    for (int i = 0; i < s.length(); ++i)
+    bool good_input = false;
+    unsigned char x;
+
+    while (!good_input)
     {
-        char c = s[i];
-        ++m[c];
+        cout << string(50, '\n');
+        cout << "Huffman (0) / Shannon - Fano (1):\t";
+        cin >> x;
+        if (!(x == '1' || x == '0'))
+        {
+            good_input = false;
+            continue;
+        }
+        good_input = true;
     }
 
-    map<char, int>::iterator itr;
-    for (itr = m.begin(); itr != m.end(); ++itr)
+    HuffmanCode *hc = nullptr;
+    if (x == '0')
     {
-        cout << itr->first << ": " << itr->second << endl;
+        hc = new HuffmanCode();
+        hc->encode("input.txt", "output.bin");
+        hc->decode("output.bin", "decoded.txt");
+    } else
+    {
+        cout << "not yet";
     }
+
+    delete hc;
     return 0;
 }
