@@ -29,6 +29,8 @@ public:
     Table(Node *root);
 
     map<char, vector<bool >> get_table();
+
+    ~Table();
 };
 
 

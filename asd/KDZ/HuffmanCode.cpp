@@ -16,12 +16,22 @@ using std::vector;
 using std::ifstream;
 using std::ofstream;
 
+ofstream s("asd.txt");
+
+void printVec(vector<bool> vec)
+{
+    for (auto i = vec.begin(); i != vec.end(); ++i)
+    {
+        s << *i;
+    }
+}
+
 void HuffmanCode::encode(string in, string out)
 {
     map<char, int> m;
     ifstream myfile(in);
     char c;
-    while (!myfile.eof())
+    while (true)
     {
         char tmp = (char) myfile.get();
         if (tmp != EOF)
@@ -54,6 +64,7 @@ void HuffmanCode::encode(string in, string out)
     _root = lst.front();
     Table *table = new Table(_root);
 
+
     myfile.clear();
     myfile.seekg(0);
 
@@ -83,6 +94,10 @@ void HuffmanCode::encode(string in, string out)
 
     m.clear();
     lst.clear();
+
+
+
+    delete table;
 }
 
 void HuffmanCode::decode(string src, string dest)

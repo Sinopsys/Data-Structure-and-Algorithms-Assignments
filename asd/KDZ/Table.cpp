@@ -32,6 +32,12 @@ map<char, vector<bool >> Table::get_table()
 {
     return this->_table;
 }
+
+Table::~Table()
+{
+    _code.clear();
+    _table.clear();
+}
 //
 //void Table::buildTable(vector<Node *> vec, int start, int end)
 //{

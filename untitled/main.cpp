@@ -37,14 +37,8 @@ public:
     Node *get_left()
     { return _left; }
 
-    void set_left(Node *left)
-    { this->_left = left; }
-
     Node *get_right()
     { return _right; }
-
-    void set_right(Node *right)
-    { this->_right = right; }
 
     Node()
     { _left = _right = nullptr; }
@@ -78,13 +72,14 @@ void buildTable(Node *root)
         buildTable(root->get_left());
     }
 
-    if (root->get_right()!= nullptr)
+    if (root->get_right() != nullptr)
     {
         code.push_back(1);
         buildTable(root->get_right());
     }
 
-    if (root->get_left() == nullptr && root->get_right() == nullptr) table[root->get_c()] = code;
+    if (root->get_left() == nullptr && root->get_right() == nullptr)
+        table[root->get_c()] = code;
 
     code.pop_back();
 }
@@ -140,9 +135,20 @@ void encodeHuff(string in, string out)
 
     int count = 0;
     char buf = 0;
+
+//    for (auto i = table.begin(); i != table.end(); ++i)
+//    {
+//        cout << i->first << ": ";
+//        for (int j = 0; j < i->second.size(); ++j)
+//        {
+//            cout << i->second[j];
+//        }
+//        cout << endl;
+//    }
+
     while (!myfile.eof())
     {
-        char c = (char) myfile.get();
+        c = (char) myfile.get();
         vector<bool> x = table[c];
         for (int n = 0; n < x.size(); ++n)
         {
@@ -201,6 +207,7 @@ void decodeHuff(string src, string dest)
 
 int main()
 {
+    setlocale(LC_ALL, "Russian");
     encodeHuff("input.txt", "output.bin");
     decodeHuff("output.bin", "out.txt");
     return 0;
