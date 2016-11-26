@@ -3,7 +3,8 @@
 #include <map>
 #include <list>
 #include <fstream>
-#include <string>
+
+#define BYTE 8
 
 using std::map;
 using std::cin;
@@ -14,6 +15,7 @@ using std::vector;
 using std::ifstream;
 using std::ofstream;
 using std::string;
+
 
 class Node
 {
@@ -37,14 +39,8 @@ public:
     Node *get_left()
     { return _left; }
 
-    void set_left(Node *left)
-    { this->_left = left; }
-
     Node *get_right()
     { return _right; }
-
-    void set_right(Node *right)
-    { this->_right = right; }
 
     Node()
     { _left = _right = nullptr; }
@@ -55,8 +51,13 @@ public:
         _right = right;
         _n = left->_n + right->_n;
     }
-};
 
+    ~Node()
+    {
+        delete _left;
+        delete _right;
+    }
+};
 
 struct Compare
 {
@@ -69,6 +70,17 @@ struct Compare
 
 vector<bool> code;
 map<char, vector<bool> > table;
+Node *root;
+map<char, int> freq;
+
+
+map<char, int> getFreq(vector<char> vec)
+{
+    map<char, int> m;
+    for (const auto &x: vec)
+        m[x]++;
+    return m;
+}
 
 void buildTable(Node *root)
 {
@@ -78,40 +90,23 @@ void buildTable(Node *root)
         buildTable(root->get_left());
     }
 
-    if (root->get_right()!= nullptr)
+    if (root->get_right() != nullptr)
     {
         code.push_back(1);
         buildTable(root->get_right());
     }
 
-    if (root->get_left() == nullptr && root->get_right() == nullptr) table[root->get_c()] = code;
+    if (root->get_left() == nullptr && root->get_right() == nullptr)
+        table[root->get_c()] = code;
 
     code.pop_back();
 }
 
 
-Node *root;
-
-
-void encodeHuff(string in, string out)
+void buildTree(map<char, int> table)
 {
-
-    map<char, int> m;
-    ifstream myfile(in);
-    char c;
-    while (true)
-    {
-        char tmp = (char) myfile.get();
-        if (tmp != EOF)
-            c = tmp;
-        else
-            break;
-        ++m[c];
-    }
-
-
     list<Node *> lst;
-    for (auto itr = m.begin(); itr != m.end(); ++itr)
+    for (auto itr = table.begin(); itr != table.end(); ++itr)
     {
         Node *tmp = new Node();
         tmp->set_c(itr->first);
@@ -128,25 +123,75 @@ void encodeHuff(string in, string out)
         lst.pop_front();
         lst.push_front(new Node(tmp_left, tmp_right));
     }
-
+    code.clear();
     root = lst.front();
+    table.clear();
     buildTable(root);
 
+    lst.clear();
+}
 
-    myfile.clear();
-    myfile.seekg(0);
 
-    ofstream output(out);
+vector<char> getSymbols(string path)
+{
+    vector<char> list;
+    ifstream inputFile(path, std::ios::binary);
+
+    while (!inputFile.eof())
+        list.push_back((char) inputFile.get());
+
+    list.pop_back();
+    inputFile.close();
+    return list;
+}
+
+
+void encodeHuff(string in, string out)
+{
+    ifstream file_in(in);
+    ofstream output(out, std::ios::binary);
+
+    vector<char> symbols = getSymbols(in);
+
+    // case of 1 letter
+    if (symbols.size() == 1)
+    {
+        int n = 1;
+        output.write(((char *) &n), sizeof(int));
+        char c;
+        c = (char) file_in.get();
+        output.write((&c), sizeof(char));
+        return;
+    }
+
+    freq = getFreq(symbols);
+    buildTree(freq);
+
+    int len_msg = (int) symbols.size();
+    output.write(((char *) &len_msg), sizeof(int));
+
+    int len_freq = (int) freq.size() * 2;
+    output.write(((char *) &len_freq), sizeof(int));
+
+
+    for (auto i = freq.begin(); i != freq.end(); ++i)
+    {
+        output.write(((char *) &i->first), sizeof(char));
+        output.write(((char *) &i->second), sizeof(int));
+    }
+
 
     int count = 0;
     char buf = 0;
-    while (!myfile.eof())
+
+
+    while (!file_in.eof())
     {
-        char c = (char) myfile.get();
+        char c = (char) file_in.get();
         vector<bool> x = table[c];
-        for (int n = 0; n < x.size(); ++n)
+        for (const auto &i:x)
         {
-            buf = buf | x[n] << (7 - count);
+            buf = buf | i << (BYTE - count - 1);
             count++;
             if (count == 8)
             {
@@ -156,55 +201,113 @@ void encodeHuff(string in, string out)
             }
         }
     }
+    if (count != 0)
+        output << buf;
 
-    myfile.close();
+    file_in.close();
     output.close();
 
-    m.clear();
-    lst.clear();
-
-
+    symbols.clear();
 }
 
 
 void decodeHuff(string src, string dest)
 {
-    ifstream from(src);
+    ifstream from(src, std::ios::binary);
     ofstream de(dest);
+    string res;
 
+    int len_msg;
+    from.read(((char *) &len_msg), sizeof(int));
+
+    // case of 1 letter
+    if (len_msg == 1)
+    {
+        char c;
+        from.read((&c), sizeof(char));
+        de << c;
+        return;
+    }
+
+    int len_freq;
+    from.read(((char *) &len_freq), sizeof(int));
+
+    map<char, int> m;
+    for (int i = 0; i < len_freq / 2; ++i)
+    {
+        char tmp_char;
+        int tmp_int;
+        from.read((&tmp_char), sizeof(char));
+        from.read(((char *) &tmp_int), sizeof(int));
+        m[tmp_char] = tmp_int;
+    }
+
+//    for (const auto &i:m)
+//    {
+//        cout << i.first << ':' << i.second << endl;
+//    }
+
+    buildTree(m);
     Node *p = root;
+
     int count = 0;
     char byte;
     byte = (char) from.get();
     while (!from.eof())
     {
-        bool b = (bool) (byte & (1 << (7 - count)));
+        bool b = (bool) (byte & (1 << (BYTE - count++ - 1)));
         if (b)
             p = p->get_right();
         else
             p = p->get_left();
         if (p->get_left() == nullptr && p->get_right() == nullptr)
         {
-            de << p->get_c();
+            res += p->get_c();
             p = root;
         }
-        count++;
-        if (count == 8)
+//        ++count;
+        if (count == BYTE)
         {
             count = 0;
             byte = (char) from.get();
         }
     }
+
+    de.write(res.c_str(), len_msg);
+
     from.close();
+    de.close();
 }
 
 
 int main()
 {
-    encodeHuff("input.txt", "output.bin");
-    decodeHuff("output.bin", "out.txt");
+    int choice;
+
+    cout << "1.File archiving " << endl;
+    cout << "2.De-archive the file \n" << endl;
+    cout << "Make your choice: ";
+    cin >> choice;
+
+    switch (choice)
+    {
+        case 1:
+            encodeHuff("input.txt", "output.bin");
+            cout << "\nFile was saved with name: 'output.bin' \n" << endl;
+            cout << "..exiting.." << endl;
+            break;
+        case 2:
+            decodeHuff("output.bin", "out.txt");
+            cout << "\nDe-archiving successful \nFile was saved with name: 'out.txt' \n" << endl;
+            cout << "..exiting.." << endl;
+            break;
+        default:
+            cout << "\nYou made a wrong choice!" << endl;
+            cout << "..exiting.." << endl;
+            break;
+    }
+
     return 0;
 }
-
 
 // EOF

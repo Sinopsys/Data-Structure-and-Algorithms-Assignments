@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/kirill/University/HSE/Algo/Homework/untitled/main.cpp
+/home/kirill/University/HSE/Algo/Homework/KDZ/main.cpp
 iostream
 -
 vector
@@ -16,7 +16,5 @@ map
 list
 -
 fstream
--
-string
 -
 

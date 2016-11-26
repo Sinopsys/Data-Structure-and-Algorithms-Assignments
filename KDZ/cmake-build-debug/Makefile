@@ -6,7 +6,7 @@ default_target: all
 
 .PHONY : default_target
 
-# Allow only one "make -f Makefile2" at _n time, but pass parallelism.
+# Allow only one "make -f Makefile2" at a time, but pass parallelism.
 .NOTPARALLEL:
 
 
@@ -41,7 +41,7 @@ SHELL = /bin/sh
 # The CMake executable.
 CMAKE_COMMAND = /home/kirill/Soft/clion-2016.2.3/bin/cmake/bin/cmake
 
-# The command to remove _n file.
+# The command to remove a file.
 RM = /home/kirill/Soft/clion-2016.2.3/bin/cmake/bin/cmake -E remove -f
 
 # Escaping for special characters.
@@ -136,7 +136,7 @@ main.i: main.cpp.i
 
 .PHONY : main.i
 
-# target to preprocess _n source file
+# target to preprocess a source file
 main.cpp.i:
 	$(MAKE) -f CMakeFiles/KDZ.dir/build.make CMakeFiles/KDZ.dir/main.cpp.i
 .PHONY : main.cpp.i
@@ -145,7 +145,7 @@ main.s: main.cpp.s
 
 .PHONY : main.s
 
-# target to generate assembly for _n file
+# target to generate assembly for a file
 main.cpp.s:
 	$(MAKE) -f CMakeFiles/KDZ.dir/build.make CMakeFiles/KDZ.dir/main.cpp.s
 .PHONY : main.cpp.s
