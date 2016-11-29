@@ -3,9 +3,9 @@
 #include <map>
 #include <list>
 #include <fstream>
+#include <cstring>
 
 #define BYTE 8
-
 
 
 using std::map;
@@ -191,18 +191,22 @@ void encodeHuff(string in, string out)
 
     vector<char> symbols = getSymbols(in);
 
-    // case of 1 letter
-    if (symbols.size() == 1)
+    freq = getFreq(symbols);
+    if (freq.size() == 1)
     {
         int n = 1;
         output.write(((char *) &n), sizeof(int));
+        int k = (int) symbols.size();
+        output.write(((char *) &k), sizeof(int));
         char c;
-        c = (char) file_in.get();
-        output.write((&c), sizeof(char));
+        for (int i = 0; i < symbols.size(); ++i)
+        {
+            c = symbols[i];
+            output.write((&c), sizeof(char));
+        }
         return;
     }
 
-    freq = getFreq(symbols);
     buildTree(freq);
 
     int len_msg = (int) symbols.size();
@@ -261,9 +265,14 @@ void decodeHuff(string src, string dest)
     // case of 1 letter
     if (len_msg == 1)
     {
+        int how_many;
+        from.read(((char *) &how_many), sizeof(int));
         char c;
-        from.read((&c), sizeof(char));
-        de << c;
+        for (int i = 0; i < how_many; ++i)
+        {
+            from.read((&c), sizeof(char));
+            de << c;
+        }
         return;
     }
 
@@ -362,15 +371,33 @@ void encodeSF(string in, string out)
 {
     map<char, int> freqs;
     ifstream inp(in);
+    ofstream outp(out, std::ios::binary | std::ios::out);
+    vector<char> symbols = getSymbols(in);
 
     char ch;
     int total = 0;
-    while ((ch = (char) inp.get()) != EOF)
+    for (const auto &ch:symbols)
     {
         freqs[ch]++;
         total++;
     }
     probTableSize = (int) freqs.size();
+
+    if (freqs.size() == 1)
+    {
+        int n = 1;
+        outp.write(((char *) &n), sizeof(int));
+        int k = (int) symbols.size();
+        outp.write(((char *) &k), sizeof(int));
+        char c;
+        for (int i = 0; i < symbols.size(); ++i)
+        {
+            c = symbols[i];
+            outp.write((&c), sizeof(char));
+        }
+        return;
+    }
+
 
     probTable = new node[probTableSize];
     float ftot = float(total);
@@ -385,7 +412,6 @@ void encodeSF(string in, string out)
 
     shannonFano(0, probTableSize - 1);
 
-    ofstream outp(out, std::ios::binary | std::ios::out);
 
     outp.write(((char *) &total), sizeof(int));
 
@@ -457,11 +483,27 @@ void decodeSF(string from, string dest)
     int tsize;
 
     ifstream fr(from, std::ios::binary | std::ios::in);
+    ofstream de(dest, std::ios::binary | std::ios::out);
 
 
     fr.read((char *) (&total), sizeof(int));
-    fr.read((char *) (&tsize), sizeof(int));
 
+    // case of 1 letter
+    if (total == 1)
+    {
+        int how_many;
+        fr.read(((char *) &how_many), sizeof(int));
+        char c;
+        for (int i = 0; i < how_many; ++i)
+        {
+            fr.read((&c), sizeof(char));
+            de << c;
+        }
+        return;
+    }
+
+
+    fr.read((char *) (&tsize), sizeof(int));
 
     probTable = new node[tsize];
     for (int i = 0; i < tsize; i++)
@@ -474,8 +516,6 @@ void decodeSF(string from, string dest)
 
     shannonFano(0, tsize - 1);
 
-
-    ofstream de(dest, std::ios::binary | std::ios::out);
 
     string accum = "";
 
@@ -511,32 +551,98 @@ void decodeSF(string from, string dest)
     fr.close();
 }
 
-
-int main()
+int getCutNum(string inp)
 {
-    int choice;
+    for (int i = (int) inp.size() - 1; i >= 0; --i)
+        if (inp[i] == '.')
+            return i;
+    return (int) inp.size();
+}
 
-    cout << "1.File archiving " << endl;
-    cout << "2.De-archive the file \n" << endl;
-    cout << "Make your choice: ";
-    cin >> choice;
+//int main()
+//{
+//    int choice;
+//
+//    cout << "1.File archiving " << endl;
+//    cout << "2.De-archive the file \n" << endl;
+//    cout << "Make your choice: ";
+//    cin >> choice;
+//
+//    switch (choice)
+//    {
+//        case 1:
+//            encodeHuff("input.txt", "output.bin");
+//            cout << "\nFile was saved with name: 'output.bin' \n" << endl;
+//            cout << "..exiting.." << endl;
+//            break;
+//        case 2:
+//            decodeHuff("output.bin", "out.txt");
+//            cout << "\nDe-archiving successful \nFile was saved with name: 'out.txt' \n" << endl;
+//            cout << "..exiting.." << endl;
+//            break;
+//        default:
+//            cout << "\nYou made a wrong choice!" << endl;
+//            cout << "..exiting.." << endl;
+//            break;
+//    }
+int main(int argc, char *argv[])
+{
+    string name1;
+    string name2;
 
-    switch (choice)
+/**
+ * ./a.out haff input.txt encoded.haff
+ * ./a.out haff input.txt
+ * ./a.out haff -d encoded.haff
+ * ./a.out haff -d encoded.haff decoded.txt
+ *
+ * ./a.out shan input.txt encoded.shan
+ * ./a.out shan input.txt
+ * ./a.out shan -d encoded.shan
+ * ./a.out shan -d encoded.shan decoded.txt
+ */
+
+
+    if (strcmp(argv[1], "haff") == 0)
     {
-        case 1:
-            encodeHuff("input.txt", "output.bin");
-            cout << "\nFile was saved with name: 'output.bin' \n" << endl;
-            cout << "..exiting.." << endl;
-            break;
-        case 2:
-            decodeHuff("output.bin", "out.txt");
-            cout << "\nDe-archiving successful \nFile was saved with name: 'out.txt' \n" << endl;
-            cout << "..exiting.." << endl;
-            break;
-        default:
-            cout << "\nYou made a wrong choice!" << endl;
-            cout << "..exiting.." << endl;
-            break;
+        if (strcmp(argv[2], "-d") == 0)
+        {
+            name1 = argv[3];
+            if (argc > 4)
+                name2 = argv[4];
+            else
+                name2 = name1.substr(0, (unsigned int) getCutNum(name1)) + "-unz-h.txt";
+
+            decodeHuff(name1, name2);
+        } else
+        {
+            name1 = argv[2];
+            if (argc > 3)
+                name2 = argv[3];
+            else
+                name2 = name1.substr(0, (unsigned int) getCutNum(name1)) + ".haff";
+            encodeHuff(name1, name2);
+        }
+    } else if (strcmp(argv[1], "shan") == 0)
+    {
+        if (strcmp(argv[2], "-d") == 0)
+        {
+            name1 = argv[3];
+            if (argc > 4)
+                name2 = argv[4];
+            else
+                name2 = name1.substr(0, (unsigned int) getCutNum(name1)) + "-unz-s.txt";
+
+            decodeSF(name1, name2);
+        } else
+        {
+            name1 = argv[2];
+            if (argc > 3)
+                name2 = argv[3];
+            else
+                name2 = name1.substr(0, (unsigned int) getCutNum(name1)) + ".shan";
+            encodeSF(name1, name2);
+        }
     }
 
     return 0;
