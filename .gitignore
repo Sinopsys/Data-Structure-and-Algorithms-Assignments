@@ -2,3 +2,10 @@
 *.txt
 *.zip
 *.out
+*.aux
+*.fls
+*.fdb_latexmk
+*.log
+*.out
+*.synctex.gz
+*.loc
