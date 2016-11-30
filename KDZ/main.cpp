@@ -269,7 +269,7 @@ void buildTree(map<char, int> table)
 vector<char> getSymbols(string path)
 {
     vector<char> vec;
-    ifstream inputFile(path, std::ios::binary);
+    ifstream inputFile(path);
 
     // read char by char into vector
     //
@@ -296,7 +296,7 @@ void encodeHuff(string in, string out)
     // opening streams
     //
     ifstream file_in(in);
-    ofstream output(out, std::ios::binary);
+    ofstream output(out, std::ios::binary | std::ios::out);
 
     // get all the symbols from the input file
     //
@@ -408,7 +408,7 @@ void encodeHuff(string in, string out)
 void decodeHuff(string src, string dest)
 {
     // open streams
-    ifstream from(src, std::ios::binary);
+    ifstream from(src, std::ios::binary | std::ios::in);
     ofstream de(dest);
 
     // result string which will be put in the destination file
@@ -696,7 +696,7 @@ void encodeSF(string in, string out)
         //
         for (const auto &xx:x)
         {
-            buf = buf | xx << (BYTE - count - 1);
+            buf |= xx << (BYTE - count - 1);
             count++;
             if (count == BYTE)
             {
@@ -768,7 +768,7 @@ void decodeSF(string from, string dest)
     // opening streams
     //
     ifstream fr(from, std::ios::binary | std::ios::in);
-    ofstream de(dest, std::ios::binary | std::ios::out);
+    ofstream de(dest);
 
     // read the total size of the original message
     //
