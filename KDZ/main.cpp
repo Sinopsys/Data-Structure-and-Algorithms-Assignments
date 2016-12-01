@@ -869,6 +869,23 @@ int getCutNum(string inp)
 
 int main(int argc, char *argv[])
 {
+    // printing usage
+    //
+    if (argc == 1)
+    {
+        cout << endl << "**********HUFFMAN / SHANNON-FANO ARCHIVER**********" << endl << endl;
+        cout << "******************** U S A G E ********************" << endl << endl;
+        cout << "./a.out haff input.txt encoded.haff" << endl;
+        cout << "./a.out haff input.txt" << endl;
+        cout << "./a.out haff -d encoded.haff" << endl;
+        cout << "./a.out haff -d encoded.haff decoded.txt" << endl;
+        cout << endl << endl;
+        cout << "./a.out shan input.txt encoded.shan" << endl;
+        cout << "./a.out shan input.txt" << endl;
+        cout << "./a.out shan -d encoded.shan" << endl;
+        cout << "./a.out shan -d encoded.shan decoded.txt" << endl;
+        return 0;
+    }
     // name of the first file
     //
     string name1;
