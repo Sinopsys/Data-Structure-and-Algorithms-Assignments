@@ -141,9 +141,9 @@ struct node
     //
     char ch;
 
-    // probability of occurrence
+    // number of occurrence
     //
-    float p;
+    int p;
 };
 
 // comparator for nodes for Shannon-Fano algorithm
@@ -163,7 +163,7 @@ int probTableSize;
 
 // the table itself
 //
-node *probTable;
+node *freqTable;
 //endregion
 
 /** a common table of CODES
@@ -515,71 +515,61 @@ void decodeHuff(string src, string dest)
  */
 void shannonFano(int start, int stop)
 {
-    // index of the splitting point
+    // in case we have 1 or less element just return
     //
-    int splitIndex;
-
-    // current probability, full (sum, always approx = 1), and half, which is full / 2
-    //
-    float prob, fullProb, halfProb;
-
-    // in case we have 1 element just return
-    //
-    if (start == stop)
+    if (start >= stop)
     {
         return;
-    } else if (stop - start == 1)
-    {
-        // we have 2 elements, for the first goes 0, for the second 1
-        //
-        table[probTable[start].ch].push_back(0);
-        table[probTable[stop].ch].push_back(1);
-    } else
-    {
-        // count the full probability, it is always approx 1
-        //
-        fullProb = 0;
-        for (int i = start; i <= stop; ++i)
-        {
-            fullProb += probTable[i].p;
-        }
-
-        prob = 0;
-        splitIndex = -1;
-        halfProb = fullProb * 0.5f;
-
-        // find the partition
-        //
-        for (int i = start; i <= stop; ++i)
-        {
-            // accumulating the current probability
-            prob += probTable[i].p;
-            if (prob <= halfProb)
-            {
-                // if we are in the first part add 0
-                //
-                table[probTable[i].ch].push_back(0);
-            } else
-            {
-                // else add 0
-                //
-                table[probTable[i].ch].push_back(1);
-                if (splitIndex < 0)
-                {
-                    splitIndex = i;
-                }
-            }
-        }
-        if (splitIndex < 0)
-        {
-            splitIndex = start + 1;
-        }
-
-        // recursively call this function on the first partition and the second one
-        //
-        shannonFano(start, splitIndex - 1);
-        shannonFano(splitIndex, stop);
     }
+
+    // we have 2 elements, for the first goes 0, for the second 1
+    //
+    if (start == stop - 1)
+    {
+        table[freqTable[start].ch].push_back(0);
+        table[freqTable[stop].ch].push_back(1);
+        return;
+    }
+
+    int h_id = start;
+    int l_id = stop;
+    int h_sum = freqTable[h_id].p;
+    int l_sum = freqTable[l_id].p;
+
+    // move the h_id down and l_id up
+    // and when h_sum and l_sum intersect stop
+    //
+    while (h_id != l_id - 1)
+    {
+        if (h_sum > l_sum)
+        {
+            l_id--;
+            l_sum += freqTable[l_id].p;
+        } else
+        {
+            h_id++;
+            h_sum += freqTable[h_id].p;
+        }
+    }
+
+    int i;
+
+    // for the first partition we append 0
+    //
+    for (i = start; i <= h_id; i++)
+    {
+        table[freqTable[i].ch].push_back(0);
+    }
+
+    // for the second 1
+    //
+    for (i = l_id; i <= stop; i++)
+    {
+        table[freqTable[i].ch].push_back(1);
+    }
+
+    shannonFano(start, h_id);
+    shannonFano(l_id, stop);
 }
 
 /**
@@ -639,27 +629,26 @@ void encodeSF(string in, string out)
         return;
     }
 
-    // create a probability table
+    // create a freq table
     //
-    probTable = new node[probTableSize];
+    freqTable = new node[probTableSize];
 
-    // initialize the probability table
+    // initialize the freq table
     //
     int i = 0;
     for (auto fi = freqs.begin(); fi != freqs.end(); ++fi, ++i)
     {
-        probTable[i].ch = fi->first;
-        probTable[i].p = float(fi->second) / (float) total;
+        freqTable[i].ch = fi->first;
+        freqTable[i].p = (fi->second);
     }
 
     // sort it in ascending order
     //
-    qsort(probTable, (size_t) probTableSize, sizeof(node), node_compare);
+    qsort(freqTable, (size_t) probTableSize, sizeof(node), node_compare);
 
     // create a code table
     //
     shannonFano(0, probTableSize - 1);
-
     //begin writing the output file.
 
     // write total # of chars in the source message
@@ -674,8 +663,8 @@ void encodeSF(string in, string out)
     //
     for (i = 0; i < probTableSize; i++)
     {
-        outp.write((&probTable[i].ch), sizeof(char));
-        outp.write(((char *) &probTable[i].p), sizeof(float));
+        outp.write((&freqTable[i].ch), sizeof(char));
+        outp.write(((char *) &freqTable[i].p), sizeof(int));
     }
 
     // return to the 0 position in the input file for future use
@@ -714,7 +703,7 @@ void encodeSF(string in, string out)
     // clear the resources
     //
     table.clear();
-    delete[] probTable;
+    delete[] freqTable;
 
     outp.close();
     inp.close();
@@ -761,7 +750,7 @@ char getchar(vector<bool> in)
 void decodeSF(string from, string dest)
 {
     char ch;
-    float p;
+    int p;
     int total;
     int tsize;
 
@@ -796,19 +785,19 @@ void decodeSF(string from, string dest)
         return;
     }
 
-    // read the next byte - the length of the probability table
+    // read the next byte - the length of the freq table
     //
     fr.read((char *) (&tsize), sizeof(int));
 
-    // create and initialize the probability table
+    // create and initialize the freq table
     //
-    probTable = new node[tsize];
+    freqTable = new node[tsize];
     for (int i = 0; i < tsize; i++)
     {
         fr.read((&ch), sizeof(char));
-        fr.read((char *) (&p), sizeof(float));
-        probTable[i].ch = ch;
-        probTable[i].p = p;
+        fr.read((char *) (&p), sizeof(int));
+        freqTable[i].ch = ch;
+        freqTable[i].p = p;
     }
 
     // build the code table
