@@ -563,18 +563,16 @@ void shannonFano(int start, int stop)
         }
     }
 
-    int i;
-
     // for the first partition we append 0
     //
-    for (i = start; i <= h_id; i++)
+    for (int i = start; i <= h_id; i++)
     {
         table[freqTable[i].ch].push_back(0);
     }
 
     // for the second 1
     //
-    for (i = l_id; i <= stop; i++)
+    for (int i = l_id; i <= stop; i++)
     {
         table[freqTable[i].ch].push_back(1);
     }
