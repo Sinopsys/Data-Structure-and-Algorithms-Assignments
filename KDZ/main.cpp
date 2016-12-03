@@ -1,4 +1,5 @@
 // region includes, usings, defines..
+
 #include <iostream>
 #include <vector>
 #include <map>
@@ -19,7 +20,6 @@ using std::ifstream;
 using std::ofstream;
 using std::string;
 // endregion
-
 // region Description
 /**
  * @TITLE:      КДЗ-1 по дисциплине Алгоритмы и Структуры Данных
@@ -32,13 +32,17 @@ using std::string;
  *              обоими алгоритмами, словом, всё.
  *
 
- *  How to run: '-d' - dearchive
+ *
  *  NOTE: I really think that it's better to write "huff", not "haff", but
  *  I had to, because the task demanded so.
  *  Moreover, I am sure, that Mr.Fano won't like the way I name the extension
  *  of the encoded file ("shan"). If I had a possibility to name the extension as I want to,
  *  I would name it "sf".
 
+    How to run: you can run program without params to watch usage
+    ? - optional
+    [executable name] [algorithm] [-d]? [input file name] [output file name]?
+    '-d' stands for decompress
  * ./a.out haff input.txt encoded.haff
  * ./a.out haff input.txt
  * ./a.out haff -d encoded.haff
@@ -167,8 +171,8 @@ node *freqTable;
 //endregion
 
 /** a common table of CODES
- * @param char - character
- * @param vector<bool> - it's code
+ * char - character
+ * vector<bool> - it's code
  */
 map<char, vector<bool> > table;
 
@@ -182,7 +186,9 @@ map<char, int> getFreq(vector<char> vec)
 {
     map<char, int> m;
     for (const auto &x: vec)
+    {
         m[x]++;
+    }
     return m;
 }
 
@@ -209,11 +215,14 @@ void buildTable(Node *root)
     // if we reached a leaf
     //
     if (root->get_left() == nullptr && root->get_right() == nullptr)
+    {
         table[root->get_c()] = code;
+    }
 
     // delete the first node
     //
     code.pop_back();
+
 }
 
 /**
@@ -251,13 +260,13 @@ void buildTree(map<char, int> table)
         lst.push_front(new Node(tmp_left, tmp_right));
     }
 
+    root = lst.front();
+
     // clearing resources
     //
     code.clear();
-    root = lst.front();
     table.clear();
     buildTable(root);
-
     lst.clear();
 }
 
@@ -274,7 +283,9 @@ vector<char> getSymbols(string path)
     // read char by char into vector
     //
     while (!inputFile.eof())
+    {
         vec.push_back((char) inputFile.get());
+    }
 
     // skip EOF character
     //
@@ -376,6 +387,7 @@ void encodeHuff(string in, string out)
             //
             buf |= i << (BYTE - count - 1);
             count++;
+
             // when count is 8 write buf to file and reset it
             //
             if (count == BYTE)
@@ -396,7 +408,6 @@ void encodeHuff(string in, string out)
     //
     file_in.close();
     output.close();
-
     symbols.clear();
 }
 
@@ -681,14 +692,17 @@ void encodeSF(string in, string out)
         char c = (char) inp.get();
         vector<bool> x = table[c];
 
+
         // split the message (in bits) by 8 and write those chunks
         //
         for (const auto &xx:x)
         {
+
             buf |= xx << (BYTE - count - 1);
             count++;
             if (count == BYTE)
             {
+
                 count = 0;
                 outp << buf;
                 buf = 0;
@@ -704,27 +718,11 @@ void encodeSF(string in, string out)
     //
     table.clear();
     delete[] freqTable;
-
     outp.close();
     inp.close();
 }
 
 // region some helpers
-
-/**
- * a function to check the ocurrance of the input vector in the code table
- * @param in input vector
- * @return is input vector in code table
- */
-bool isInTable(vector<bool> in)
-{
-    for (const auto &i:table)
-    {
-        if (i.second == in)
-            return true;
-    }
-    return false;
-}
 
 /**
  * a function to return a char by given code
@@ -736,9 +734,11 @@ char getchar(vector<bool> in)
     for (const auto &i : table)
     {
         if (i.second == in)
+        {
             return i.first;
+        }
     }
-    return -1;
+    return 0;
 }
 // endregion
 
@@ -809,8 +809,7 @@ void decodeSF(string from, string dest)
     string res = "";
 
     int count = 0;
-    char byte;
-    byte = (char) fr.get();
+    char byte = (char) fr.get();
     vector<bool> tmp;
     while (!fr.eof())
     {
@@ -825,9 +824,10 @@ void decodeSF(string from, string dest)
         // gradually check if it exists in table and if it is
         // add char of given code to the result value
         //
-        if (isInTable(tmp))
+        char c = getchar(tmp);
+        if (c != 0)
         {
-            res += getchar(tmp);
+            res += c;
             tmp.clear();
         }
 
@@ -862,8 +862,12 @@ void decodeSF(string from, string dest)
 int getCutNum(string inp)
 {
     for (int i = (int) inp.size() - 1; i >= 0; --i)
-        if (inp[i] == '.')
-            return i;
+    {
+        {
+            if (inp[i] == '.')
+                return i;
+        }
+    }
     return (int) inp.size();
 }
 
@@ -875,6 +879,11 @@ int main(int argc, char *argv[])
     {
         cout << endl << "**********HUFFMAN / SHANNON-FANO ARCHIVER**********" << endl << endl;
         cout << "******************** U S A G E ********************" << endl << endl;
+        cout << "instruction:" << endl;
+        cout << "? - optional" << endl;
+        cout << "[executable name] [algorithm] [-d]? [input file name] [output file name]?" << endl;
+        cout << "'-d' stands for decompress" << endl << endl;
+        cout << "EXAMPLES" << endl;
         cout << "./a.out haff input.txt encoded.haff" << endl;
         cout << "./a.out haff input.txt" << endl;
         cout << "./a.out haff -d encoded.haff" << endl;
@@ -937,7 +946,6 @@ int main(int argc, char *argv[])
             encodeSF(name1, name2);
         }
     }
-
     return 0;
 }
 // endregion
