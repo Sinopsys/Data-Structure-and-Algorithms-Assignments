@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/kirill/University/HSE/Algo/Homework/kmp/kmp.cpp
+kmp.h
+/home/kirill/University/HSE/Algo/Homework/kmp/kmp.h
+list
+-
+
+/home/kirill/University/HSE/Algo/Homework/kmp/kmp.h
+vector
+-
+string
+-
+
+/home/kirill/University/HSE/Algo/Homework/kmp/main.cpp
+iostream
+-
+vector
+-
+kmp.h
+/home/kirill/University/HSE/Algo/Homework/kmp/kmp.h
+
