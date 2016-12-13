@@ -62,8 +62,6 @@ public:
 
     Node<T> *get_successor(Node<T> *x);
 
-    Node<T> *tree_min(Node<T> *x);
-
     Node<T> *search(int key);
 
     void print(Node<T> *w, int l);
@@ -284,21 +282,16 @@ void RBT<T>::insert_fixup(Node<T> *z)
 }
 
 template<class T>
-Node<T> *RBT<T>::tree_min(Node<T> *x)
-{
-    while (x->left != NIL_NODE)
-    {
-        x = x->left;
-    }
-    return x;
-}
-
-template<class T>
 Node<T> *RBT<T>::get_successor(Node<T> *x)
 {
     if (x->right != NIL_NODE)
     {
-        return tree_min(x->right);
+        Node<T> *t = x->right;
+        while (t->left != NIL_NODE)
+        {
+            t = t->left;
+        }
+        return t;
     } else
     {
         Node<T> *y = x->parent;
@@ -510,13 +503,13 @@ int main()
         a->print(a->getRoot(), 1);
         cout << endl;
     }
-//    for (int i = 0; i < count; i++)
-//    {
-//        cin >> key;
-//        a->del(key);
-//        a->print(a->getRoot(), 1);
-//        cout << endl;
-//    }
+    for (int i = 0; i < count; i++)
+    {
+        cin >> key;
+        a->del(key);
+        a->print(a->getRoot(), 1);
+        cout << endl;
+    }
     a->delete_tree();
     return 0;
 }
